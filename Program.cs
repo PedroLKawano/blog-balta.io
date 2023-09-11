@@ -1,6 +1,5 @@
 ﻿using Blog.Models;
 using Blog.Repositories;
-using Dapper.Contrib.Extensions;
 using Microsoft.Data.SqlClient;
 
 namespace Blog
@@ -13,20 +12,40 @@ namespace Blog
             var connection = new SqlConnection(CONNECTION_STRING);
             connection.Open();
 
-            ReadUsers(connection);
-            ReadRoles(connection);
-            ReadTags(connection);
+            ReadUsersWithRoles(connection);
+            // CreateUsers(connection);
+            // ReadRoles(connection);
+            // ReadTags(connection);
 
             connection.Close();
         }
 
-        public static void ReadUsers(SqlConnection connection)
+        public static void ReadUsersWithRoles(SqlConnection connection)
         {
-            var repository = new Repository<User>(connection);
-            var items = repository.Get();
+            var repository = new UserRepository(connection);
+            var items = repository.GetWithRoles();
 
             foreach (var item in items)
+            {
                 Console.WriteLine(item.Name);
+                foreach (var role in item.Roles)
+                    Console.WriteLine($" - {role.Name}");
+            }
+        }
+
+        public static void CreateUsers(SqlConnection connection)
+        {
+            var user = new User()
+            {
+                Email = "email@balta.io",
+                Bio = "bio",
+                Image = "imagem",
+                Name = "Name",
+                PasswordHash = "hash",
+                Slug = "slug"
+            };
+            var repository = new Repository<User>(connection);
+            repository.Create(user);
         }
 
         public static void ReadRoles(SqlConnection connection)
